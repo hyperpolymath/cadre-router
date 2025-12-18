@@ -6,7 +6,14 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
-permissions: read-all
+# Prevent concurrent mirror operations to avoid race conditions
+concurrency:
+  group: mirror-${{ github.ref }}
+  cancel-in-progress: false
+
+# Principle of least privilege - only request what's needed
+permissions:
+  contents: read
 
 jobs:
   mirror-gitlab:
@@ -19,6 +26,10 @@ jobs:
       - uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         with:
           ssh-private-key: ${{ secrets.GITLAB_SSH_KEY }}
+      - name: Configure SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519,rsa gitlab.com >> ~/.ssh/known_hosts 2>/dev/null
       - name: Mirror to GitLab
         run: |
           git remote add gitlab git@gitlab.com:hyperpolymath/${GITHUB_REPOSITORY#*/}.git || true
@@ -35,6 +46,10 @@ jobs:
       - uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         with:
           ssh-private-key: ${{ secrets.CODEBERG_SSH_KEY }}
+      - name: Configure SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519,rsa codeberg.org >> ~/.ssh/known_hosts 2>/dev/null
       - name: Mirror to Codeberg
         run: |
           git remote add codeberg git@codeberg.org:hyperpolymath/${GITHUB_REPOSITORY#*/}.git || true
@@ -51,6 +66,10 @@ jobs:
       - uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         with:
           ssh-private-key: ${{ secrets.BITBUCKET_SSH_KEY }}
+      - name: Configure SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519,rsa bitbucket.org >> ~/.ssh/known_hosts 2>/dev/null
       - name: Mirror to Bitbucket
         run: |
           git remote add bitbucket git@bitbucket.org:hyperpolymath/${GITHUB_REPOSITORY#*/}.git || true
