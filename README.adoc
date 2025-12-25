@@ -1,132 +1,24 @@
-= cadre-router
+= Core Contract
 :toc:
-:toclevels: 3
+:toclevels: 2
 :sectanchors:
-:source-highlighter: rouge
 
-Typed HTTP routing and coordination framework for Deno and ReScript.
+This document is the *source of truth* for what the project guarantees today.
 
-== What this is
+== Invariants
 
-`cadre-router` is a **ReScript-first HTTP routing framework** designed for:
+* Determinism: given identical inputs and identical host responses, outputs are identical.
+* Explicit effects: host interaction is explicit and observable (no hidden channels).
+* Versioned surface: public API changes require a version bump and changelog entry.
 
-* Strongly typed request routing
-* Explicit request context and middleware composition
-* Deterministic handler behaviour
-* Optional distributed state using CRDTs
+== What “done” means
 
-It is intended for **building services**, not just wiring endpoints.
+A feature is done only when:
 
-== What this is not
+* it has at least one golden test, and
+* it has at least one negative/edge test, and
+* its error modes are specified.
 
-Non-goals:
+== Out of scope
 
-* Not a “micro” router in the Express/Hono sense
-* Not a web framework with templates, ORM, or batteries included
-* Not a WASM runtime or execution engine
-* Not Node-first (Deno and Web APIs are the primary targets)
-
-If you only need “map path → function”, this is likely more than you need.
-
-== Status
-
-*Current state:* architecturally complete, with core routing, middleware, examples, and experimental distributed state.
-
-The main remaining work is **consolidation**:
-tightening the API surface, clarifying extension boundaries, and hardening examples.
-
-See `ROADMAP.adoc` for staged work.
-
-== Core concepts
-
-=== Router
-A router maps structured request patterns to typed handlers.
-
-Routes are:
-* explicit
-* composable
-* type-checked at compile time
-
-=== Context
-Handlers receive a **context object**, not raw request primitives.
-
-Context:
-* carries request data
-* accumulates middleware effects
-* can include shared or replicated state
-
-=== Middleware
-Middleware is explicit and ordered.
-
-It can:
-* enrich context
-* enforce invariants
-* reject or transform requests
-
-=== Distributed state (optional)
-`cadre-router` can integrate **CRDT-based shared state** for:
-
-* multi-node services
-* collaborative or real-time systems
-* eventually consistent coordination
-
-This layer is **optional** and additive.
-
-== Repository layout
-
-* `src/` — router core, context model, middleware, CRDT modules
-* `examples/` — runnable examples demonstrating intended usage
-* `tests/` — correctness tests
-* `benchmark/` — performance comparisons
-* `docs/` — design notes and explanations
-* `scripts/` — development helpers
-
-== Design principles
-
-* *Typed by default*: avoid stringly-typed routing
-* *Explicit effects*: no hidden global state
-* *Small core*: advanced features live in add-ons
-* *Deterministic handlers*: easier to reason about and test
-* *Deno/Web API alignment*: no Node assumptions
-
-== When to use this
-
-Use `cadre-router` when:
-
-* You are building a service, API, or edge application
-* Routing complexity matters
-* You want compile-time guarantees
-* You expect to add coordination or shared state later
-
-Do not use it when:
-
-* You are building a low-level library
-* You only need a trivial HTTP handler
-* You want maximal JS ecosystem compatibility
-
-== Relationship to other projects
-
-`cadre-router` is **infrastructure around applications**.
-
-It pairs well with:
-* domain-specific runtimes
-* policy engines
-* WebAssembly execution services
-* distributed registries
-
-It does not replace them.
-
-== License
-
-See `LICENSE.txt`.
-
-== Contributing
-
-Contributions are welcome, especially:
-
-* example improvements
-* API surface tightening
-* documentation clarifications
-* benchmark extensions
-
-AsciiDoc is preferred for documentation.
+Anything not required to satisfy the invariants is not core.
