@@ -1,0 +1,90 @@
+= Roadmap — cadre-router
+:toc:
+:toclevels: 3
+:sectanchors:
+
+This roadmap focuses on consolidation, not feature sprawl.
+
+== Stage 0 — Re-anchor intent
+
+Goal: make the project immediately understandable.
+
+MUST:
+* Clarify the “why” in README
+* Explicitly state non-goals
+* Identify which parts are core vs optional
+
+SHOULD:
+* Add a short `docs/ARCHITECTURE.adoc`
+* Document context and middleware lifecycle
+
+Exit:
+* A reader understands whether this is for them in <3 minutes.
+
+== Stage 1 — Core router stability
+
+Goal: freeze the routing + context API.
+
+MUST:
+* Stable route definition API
+* Stable context shape
+* Deterministic middleware ordering
+* Tests for route matching and context propagation
+
+SHOULD:
+* Remove or isolate experimental APIs
+* Improve error reporting and diagnostics
+
+Exit:
+* Breaking changes are unlikely without a major version bump.
+
+== Stage 2 — Middleware and composition discipline
+
+Goal: prevent “middleware soup”.
+
+MUST:
+* Clear middleware categories (auth, transform, observe, reject)
+* Explicit middleware contracts
+* Examples showing correct composition
+
+SHOULD:
+* Add lint-like checks or conventions
+* Document anti-patterns
+
+Exit:
+* Middleware usage is predictable and reviewable.
+
+== Stage 3 — Distributed state hardening (optional layer)
+
+Goal: make CRDT integration safe and optional.
+
+MUST:
+* Explicit opt-in
+* Clear failure and consistency model
+* Tests for convergence behaviour
+
+SHOULD:
+* Examples showing when *not* to use shared state
+
+Exit:
+* CRDT use does not contaminate the core router.
+
+== Stage 4 — Integration patterns
+
+Goal: make the router easy to embed.
+
+MUST:
+* Clear integration examples:
+  * edge services
+  * API gateways
+  * runtime dispatch (e.g. WASM)
+* Minimal boilerplate examples
+
+Exit:
+* `cadre-router` feels like a tool, not a framework commitment.
+
+== Ongoing hygiene
+
+* Prefer `.adoc` for docs
+* Keep benchmarks honest
+* Avoid adding features without examples
