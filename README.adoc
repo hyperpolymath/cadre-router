@@ -1,112 +1,132 @@
-= rescript-wasm-runtime
+= cadre-router
 :toc:
 :toclevels: 3
 :sectanchors:
 :source-highlighter: rouge
 
-ReScript WASM runtime and bindings.
+Typed HTTP routing and coordination framework for Deno and ReScript.
 
 == What this is
 
-This repository aims to provide a *ReScript-first* WebAssembly runtime layer and bindings, with a focus on:
+`cadre-router` is a **ReScript-first HTTP routing framework** designed for:
 
-* Running and interacting with WebAssembly modules from ReScript-compiled JavaScript
-* A clean, typed API surface suitable for browser and server-like JS runtimes
-* A structured repository with benchmarks, examples, tests, and automation scripts
+* Strongly typed request routing
+* Explicit request context and middleware composition
+* Deterministic handler behaviour
+* Optional distributed state using CRDTs
 
-The repository contains implementation and support directories including `src/`, `tests/`, `examples/`, `benchmark/`, `scripts/`, and `docs/`. (If you’re reading this in GitHub’s UI: the code lives in `src/`.) :contentReference[oaicite:2]{index=2}
+It is intended for **building services**, not just wiring endpoints.
 
 == What this is not
 
-Non-goals (at least for the early stages):
+Non-goals:
 
-* Not a full WebAssembly engine competing with Wasmtime/WasmEdge
-* Not a JIT/AOT compiler project
-* Not a WASI “system” or container runtime (unless explicitly added later as a separate layer)
-* Not TypeScript-first: ReScript is the source of truth
+* Not a “micro” router in the Express/Hono sense
+* Not a web framework with templates, ORM, or batteries included
+* Not a WASM runtime or execution engine
+* Not Node-first (Deno and Web APIs are the primary targets)
+
+If you only need “map path → function”, this is likely more than you need.
 
 == Status
 
-*Current status:* stabilising the project narrative and ensuring the implementation matches the stated goal.
+*Current state:* architecturally complete, with core routing, middleware, examples, and experimental distributed state.
 
-See `ROADMAP.adoc` for staged deliverables.
+The main remaining work is **consolidation**:
+tightening the API surface, clarifying extension boundaries, and hardening examples.
 
-== Quick start
+See `ROADMAP.adoc` for staged work.
 
-=== Prerequisites
+== Core concepts
 
-You’ll typically need:
+=== Router
+A router maps structured request patterns to typed handlers.
 
-* ReScript toolchain (via `rescript.json`)
-* A JS runtime (browser tooling, or a server runtime depending on your target)
-* Optional: `just` (if you use the included `justfile` tasks) :contentReference[oaicite:3]{index=3}
+Routes are:
+* explicit
+* composable
+* type-checked at compile time
 
-=== Common tasks
+=== Context
+Handlers receive a **context object**, not raw request primitives.
 
-.Build
-----
-just build
-----
+Context:
+* carries request data
+* accumulates middleware effects
+* can include shared or replicated state
 
-.Test
-----
-just test
-----
+=== Middleware
+Middleware is explicit and ordered.
 
-.Run examples
-----
-just examples
-----
+It can:
+* enrich context
+* enforce invariants
+* reject or transform requests
 
-.Benchmark
-----
-just bench
-----
+=== Distributed state (optional)
+`cadre-router` can integrate **CRDT-based shared state** for:
 
-NOTE: If your environment doesn’t use `just`, inspect `justfile` for the underlying commands and run them directly.
+* multi-node services
+* collaborative or real-time systems
+* eventually consistent coordination
+
+This layer is **optional** and additive.
 
 == Repository layout
 
-* `src/` — core runtime + binding surface :contentReference[oaicite:4]{index=4}
-* `tests/` — correctness + regression tests :contentReference[oaicite:5]{index=5}
-* `examples/` — minimal demos showing intended usage :contentReference[oaicite:6]{index=6}
-* `benchmark/` — micro/meso benchmarks for hot paths :contentReference[oaicite:7]{index=7}
-* `docs/` — design notes, API notes, decisions :contentReference[oaicite:8]{index=8}
-* `scripts/` — build/release/verification helpers :contentReference[oaicite:9]{index=9}
+* `src/` — router core, context model, middleware, CRDT modules
+* `examples/` — runnable examples demonstrating intended usage
+* `tests/` — correctness tests
+* `benchmark/` — performance comparisons
+* `docs/` — design notes and explanations
+* `scripts/` — development helpers
 
-== API philosophy
+== Design principles
 
-Design principles for the public API:
+* *Typed by default*: avoid stringly-typed routing
+* *Explicit effects*: no hidden global state
+* *Small core*: advanced features live in add-ons
+* *Deterministic handlers*: easier to reason about and test
+* *Deno/Web API alignment*: no Node assumptions
 
-* *Typed by default:* avoid “stringly-typed” host imports/exports where feasible
-* *Minimal surface:* prefer a small stable core with optional add-ons
-* *No hidden channels:* side effects and host interactions should be explicit in the API
-* *Portability:* target Web APIs where possible (e.g. WebCrypto/WebAssembly APIs)
+== When to use this
 
-== Mirrors and canonical source
+Use `cadre-router` when:
 
-*Canonical source of truth:* GitHub (`hyperpolymath/rescript-wasm-runtime`).
+* You are building a service, API, or edge application
+* Routing complexity matters
+* You want compile-time guarantees
+* You expect to add coordination or shared state later
 
-Mirrors may exist on other forges for availability, but GitHub remains canonical unless explicitly stated otherwise.
+Do not use it when:
 
-== Security
+* You are building a low-level library
+* You only need a trivial HTTP handler
+* You want maximal JS ecosystem compatibility
 
-* WebAssembly is not automatically “safe.” Threat models differ between browser and server runtimes.
-* Avoid treating “runs WASM” as a security claim; treat it as an execution format with constraints.
+== Relationship to other projects
 
-If you discover a vulnerability, see `SECURITY.md`. :contentReference[oaicite:10]{index=10}
+`cadre-router` is **infrastructure around applications**.
+
+It pairs well with:
+* domain-specific runtimes
+* policy engines
+* WebAssembly execution services
+* distributed registries
+
+It does not replace them.
 
 == License
 
-See `LICENSE.txt`. :contentReference[oaicite:11]{index=11}
+See `LICENSE.txt`.
 
 == Contributing
 
-See `CONTRIBUTING.md` and `TPCF.md` for how contributions are structured and kept safe. :contentReference[oaicite:12]{index=12}
+Contributions are welcome, especially:
 
-Recommended contribution entry points:
+* example improvements
+* API surface tightening
+* documentation clarifications
+* benchmark extensions
 
-* Add/clean an example in `examples/`
-* Add a regression test in `tests/`
-* Improve benchmark coverage in `benchmark/`
-* Tighten docs in `docs/` (AsciiDoc preferred)
+AsciiDoc is preferred for documentation.
