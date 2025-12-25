@@ -28,6 +28,12 @@ Non-goals:
 
 If you only need “map path → function”, this is likely more than you need.
 
+== Document status
+
+* README.adoc — current behaviour and usage
+* VISION.adoc — aspirational direction (non-binding)
+* ROADMAP.adoc — staged execution plan (subject to revision)
+
 == Status
 
 *Current state:* architecturally complete, with core routing, middleware, examples, and experimental distributed state.
