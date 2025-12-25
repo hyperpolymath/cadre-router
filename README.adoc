@@ -120,6 +120,20 @@ It does not replace them.
 
 See `LICENSE.txt`.
 
+== Technology boundaries
+
+This project intentionally uses:
+
+* ReScript (source of truth)
+* JavaScript (compiled output)
+* Web APIs / Deno runtime
+
+It explicitly does *not* depend on:
+* Node.js
+* TypeScript
+* JVM / .NET
+* SQL or relational databases
+
 == Contributing
 
 Contributions are welcome, especially:
