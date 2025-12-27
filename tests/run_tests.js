@@ -3,13 +3,14 @@
 import * as Url_test from "./Url_test.js";
 import * as Parser_test from "./Parser_test.js";
 import * as Navigation_test from "./Navigation_test.js";
+import * as Conformance_test from "./Conformance_test.js";
 import * as RouteBuilder_test from "./RouteBuilder_test.js";
 
-console.log("╔════════════════════════════════════════╗");
+console.log("+========================================+");
 
-console.log("║     cadre-router Test Suite            ║");
+console.log("|     cadre-router Test Suite           |");
 
-console.log("╚════════════════════════════════════════╝");
+console.log("+========================================+");
 
 console.log("");
 
@@ -21,12 +22,14 @@ console.log("\nLoading Navigation_test...");
 
 console.log("\nLoading RouteBuilder_test...");
 
+console.log("\nLoading Conformance_test...");
+
 console.log("");
 
-console.log("╔════════════════════════════════════════╗");
+console.log("+========================================+");
 
-console.log("║     All Tests Complete                 ║");
+console.log("|     All Tests Complete                |");
 
-console.log("╚════════════════════════════════════════╝");
+console.log("+========================================+");
 
 /*  Not a pure module */
