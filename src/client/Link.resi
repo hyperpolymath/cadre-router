@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Link.resi — Type-safe link component (React-based, optional)
+// Link.resi - Type-safe link component (React-based, optional)
 //
 // NOTE: This module requires @rescript/react as a peer dependency.
 // For rescript-tea, see cadre-tea-router which provides tea-native links.

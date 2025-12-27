@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// HashNavigation.res — Hash-based routing for static hosting
+// HashNavigation.res - Hash-based routing for static hosting
 
 @val external locationHash: string = "window.location.hash"
-@val external setLocationHash: string => unit = "window.location.hash ="
+let setLocationHash: string => unit = _hash => %raw(`window.location.hash = _hash`)
 @val external historyPushState: (Js.Nullable.t<'a>, string, string) => unit = "window.history.pushState"
 @val external historyReplaceState: (Js.Nullable.t<'a>, string, string) => unit = "window.history.replaceState"
 @val external historyBack: unit => unit = "window.history.back"

@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: Apache-2.0
-// Url_test.res — Tests for URL parsing and serialization
+// Url_test.res - Tests for URL parsing and serialization
 
 // Simple test harness (no external dependencies)
 let assertEq = (name: string, actual: 'a, expected: 'a): unit => {
   if actual == expected {
-    Js.Console.log(`✓ ${name}`)
+    Js.Console.log(`[PASS] ${name}`)
   } else {
-    Js.Console.error(`✗ ${name}`)
-    Js.Console.error(`  Expected: ${Js.Json.stringifyAny(expected)->Option.getOr("?")}`)
-    Js.Console.error(`  Actual:   ${Js.Json.stringifyAny(actual)->Option.getOr("?")}`)
+    Js.Console.error(`[FAIL] ${name}`)
+    Js.Console.error(`  Expected: ${Js.Json.stringifyAny(expected)->Belt.Option.getWithDefault("?")}`)
+    Js.Console.error(`  Actual:   ${Js.Json.stringifyAny(actual)->Belt.Option.getWithDefault("?")}`)
   }
 }
 
 let assertTrue = (name: string, condition: bool): unit => {
   if condition {
-    Js.Console.log(`✓ ${name}`)
+    Js.Console.log(`[PASS] ${name}`)
   } else {
-    Js.Console.error(`✗ ${name}`)
+    Js.Console.error(`[FAIL] ${name}`)
   }
 }
 

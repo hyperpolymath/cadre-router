@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Url.res — Parsed URL representation for client-side routing
+// Url.res - Parsed URL representation for client-side routing
 
 type t = {
   path: list<string>,

@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+lib/
+
+# Lock files
+package-lock.json
+
+# Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store

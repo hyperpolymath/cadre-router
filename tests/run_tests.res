@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// run_tests.res — Test runner for all modules
+// run_tests.res - Test runner for all modules
 
 Js.Console.log("╔════════════════════════════════════════╗")
 Js.Console.log("║     cadre-router Test Suite            ║")

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// RouteBuilder.resi — Bidirectional route definitions
+// RouteBuilder.resi - Bidirectional route definitions
 //
 // This module provides a way to define routes where parsing and serialization
 // are guaranteed to be consistent. Define your route pattern once, and get
@@ -58,6 +58,11 @@ let custom: (
 
 /**
  * Compose two segments: a /> b
+ */
+let andThen: (segment<'a>, segment<'b>) => segment<('a, 'b)>
+
+/**
+ * Compose two segments: a /> b (alias for andThen)
  */
 let \"/>": (segment<'a>, segment<'b>) => segment<('a, 'b)>
 

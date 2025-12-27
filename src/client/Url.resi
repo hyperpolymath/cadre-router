@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Url.resi — Parsed URL representation for client-side routing
+// Url.resi - Parsed URL representation for client-side routing
 
 /**
  * Represents a parsed URL with path segments, query parameters, and fragment.

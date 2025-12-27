@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Navigation_test.res — Tests for browser navigation module
+// Navigation_test.res - Tests for browser navigation module
 //
 // NOTE: These tests require a browser environment or JSDOM.
 // In Deno, run with: deno test --allow-read --unstable tests/
@@ -8,11 +8,11 @@
 // Test harness
 let assertEq = (name: string, actual: 'a, expected: 'a): unit => {
   if actual == expected {
-    Js.Console.log(`✓ ${name}`)
+    Js.Console.log(`[PASS] ${name}`)
   } else {
-    Js.Console.error(`✗ ${name}`)
-    Js.Console.error(`  Expected: ${Js.Json.stringifyAny(expected)->Option.getOr("?")}`)
-    Js.Console.error(`  Actual:   ${Js.Json.stringifyAny(actual)->Option.getOr("?")}`)
+    Js.Console.error(`[FAIL] ${name}`)
+    Js.Console.error(`  Expected: ${Js.Json.stringifyAny(expected)->Belt.Option.getWithDefault("?")}`)
+    Js.Console.error(`  Actual:   ${Js.Json.stringifyAny(actual)->Belt.Option.getWithDefault("?")}`)
   }
 }
 
@@ -20,13 +20,20 @@ let assertEq = (name: string, actual: 'a, expected: 'a): unit => {
 // Mock Browser Environment Check
 // ============================================================
 
-@val external windowExists: bool = "typeof window !== 'undefined'"
+// Check if window is defined (browser environment)
+let windowExists = () => {
+  try {
+    %raw(`typeof window !== 'undefined'`)
+  } catch {
+  | _ => false
+  }
+}
 
 let skipIfNoBrowser = (name: string, test: unit => unit): unit => {
-  if windowExists {
+  if windowExists() {
     test()
   } else {
-    Js.Console.log(`⊘ ${name} (skipped - no browser environment)`)
+    Js.Console.log(`[SKIP] ${name} (skipped - no browser environment)`)
   }
 }
 
@@ -69,7 +76,7 @@ let testFunctorTypes = () => {
   let _pushFn: TestRoute.t => unit = Nav.pushRoute
   let _replaceFn: TestRoute.t => unit = Nav.replaceRoute
 
-  Js.Console.log("✓ Navigation.Make functor types compile correctly")
+  Js.Console.log("[PASS] Navigation.Make functor types compile correctly")
 }
 
 // ============================================================
@@ -96,9 +103,9 @@ let testRoundtrip = () => {
     let name = `roundtrip: ${url}`
 
     switch parsed {
-    | Some(r) if r == route => Js.Console.log(`✓ ${name}`)
-    | Some(_) => Js.Console.error(`✗ ${name} - parsed to different route`)
-    | None => Js.Console.error(`✗ ${name} - failed to parse`)
+    | Some(r) if r == route => Js.Console.log(`[PASS] ${name}`)
+    | Some(_) => Js.Console.error(`[FAIL] ${name} - parsed to different route`)
+    | None => Js.Console.error(`[FAIL] ${name} - failed to parse`)
     }
   })
 }
@@ -115,11 +122,11 @@ let testPushUrl = () => {
 
     // Verify URL changed
     if Url.pathToString(after) == "/test-push" {
-      Js.Console.log("✓ pushUrl changes location")
+      Js.Console.log("[PASS] pushUrl changes location")
       // Restore
       Navigation.back()
     } else {
-      Js.Console.error("✗ pushUrl did not change location")
+      Js.Console.error("[FAIL] pushUrl did not change location")
     }
   })
 }
@@ -130,9 +137,9 @@ let testReplaceUrl = () => {
     let current = Navigation.currentUrl()
 
     if Url.pathToString(current) == "/test-replace" {
-      Js.Console.log("✓ replaceUrl changes location")
+      Js.Console.log("[PASS] replaceUrl changes location")
     } else {
-      Js.Console.error("✗ replaceUrl did not change location")
+      Js.Console.error("[FAIL] replaceUrl did not change location")
     }
   })
 }
@@ -147,7 +154,7 @@ let testOnUrlChange = () => {
 
     // Note: popstate doesn't fire on pushState, only on back/forward
     // This test documents the behavior
-    Js.Console.log("✓ onUrlChange returns unsubscribe function")
+    Js.Console.log("[PASS] onUrlChange returns unsubscribe function")
     unsubscribe()
   })
 }
@@ -158,10 +165,10 @@ let testTypedNavigation = () => {
     let current = Navigation.currentUrl()
 
     if Url.pathToString(current) == "/profile" {
-      Js.Console.log("✓ Nav.pushRoute works with typed routes")
+      Js.Console.log("[PASS] Nav.pushRoute works with typed routes")
       Navigation.back()
     } else {
-      Js.Console.error("✗ Nav.pushRoute did not navigate correctly")
+      Js.Console.error("[FAIL] Nav.pushRoute did not navigate correctly")
     }
   })
 }

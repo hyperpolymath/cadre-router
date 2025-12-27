@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Main.res — Example TEA application with routing
+// Main.res - Example TEA application with routing
 
 // Message type
 type msg =
@@ -30,7 +30,7 @@ let init = () => {
   let (route, cmd) = Router.init()
   (
     {
-      route: route->Option.getOr(Route.Home),
+      route: route->Belt.Option.getWithDefault(Route.Home),
       errorMessage: None,
     },
     cmd,
