@@ -4,149 +4,297 @@
 :sectanchors:
 :source-highlighter: rouge
 
-Typed HTTP routing and coordination framework for Deno and ReScript.
+Type-safe URL routing for ReScript applications.
 
 == What this is
 
-`cadre-router` is a **ReScript-first HTTP routing framework** designed for:
+`cadre-router` is a **ReScript-first routing library** providing:
 
-* Strongly typed request routing
-* Explicit request context and middleware composition
-* Deterministic handler behaviour
-* Optional distributed state using CRDTs
+* **Type-safe route definitions** — Routes are variants, not strings
+* **Bidirectional serialization** — `Route.t → string` and `string → Route.t`
+* **Typed route parameters** — `Journey(JourneyId.t)` instead of `Journey(string)`
+* **Elm-style parser combinators** — Composable URL parsing DSL
+* **Browser History API** — Client-side navigation primitives
+* **Framework-agnostic core** — Works with React, rescript-tea, or vanilla
 
-It is intended for **building services**, not just wiring endpoints.
+== Quick Example
 
-== What this is not
+[source,rescript]
+----
+// Define your routes as a variant
+type route =
+  | Home
+  | Profile
+  | Journey(JourneyId.t)
+  | NotFound
 
-Non-goals:
+// Create a parser using combinators
+let parser = {
+  open CadreRouter.Parser
+  oneOf([
+    top->map(_ => Home),
+    s("profile")->map(_ => Profile),
+    s("journey")->andThen(JourneyId.parser)->map(((_, id)) => Journey(id)),
+  ])
+}
 
-* Not a “micro” router in the Express/Hono sense
-* Not a web framework with templates, ORM, or batteries included
-* Not a WASM runtime or execution engine
-* Not Node-first (Deno and Web APIs are the primary targets)
+// Serialize routes to URLs
+let toString = route => switch route {
+  | Home => "/"
+  | Profile => "/profile"
+  | Journey(id) => "/journey/" ++ JourneyId.toString(id)
+  | NotFound => "/404"
+}
 
-If you only need “map path → function”, this is likely more than you need.
+// Parse current URL
+let currentRoute = CadreRouter.Url.fromLocation()->CadreRouter.Parser.parse(parser, _)
 
-== Document status
+// Navigate programmatically
+module Nav = CadreRouter.Navigation.Make({ type t = route; let toString = toString })
+Nav.pushRoute(Profile)
+----
 
-* README.adoc — current behaviour and usage
-* VISION.adoc — aspirational direction (non-binding)
-* ROADMAP.adoc — staged execution plan (subject to revision)
+== Modules
 
-== Status
+=== `Url`
 
-*Current state:* architecturally complete, with core routing, middleware, examples, and experimental distributed state.
+Parsed URL representation.
 
-The main remaining work is **consolidation**:
-tightening the API surface, clarifying extension boundaries, and hardening examples.
+[source,rescript]
+----
+type t = {
+  path: list<string>,           // ["journey", "abc123"]
+  query: Belt.Map.String.t<string>,  // {"tab": "map"}
+  fragment: option<string>,     // Some("section")
+}
 
-See `ROADMAP.adoc` for staged work.
+let fromString: string => t
+let fromLocation: unit => t    // Read window.location
+let toString: t => string
+let getQueryParam: (t, string) => option<string>
+let getQueryParamInt: (t, string) => option<int>
+----
 
-== Core concepts
+=== `Parser`
 
-=== Router
-A router maps structured request patterns to typed handlers.
+Elm-style URL parser combinators.
 
-Routes are:
-* explicit
-* composable
-* type-checked at compile time
+[source,rescript]
+----
+type t<'a>  // Parser producing 'a
 
-=== Context
-Handlers receive a **context object**, not raw request primitives.
+// Segment matchers
+let s: string => t<unit>           // Literal: s("profile")
+let str: t<string>                 // Any string segment
+let int: t<int>                    // Integer segment
+let custom: (string => option<'a>) => t<'a>  // Custom (for typed IDs)
+let top: t<unit>                   // End of path
 
-Context:
-* carries request data
-* accumulates middleware effects
-* can include shared or replicated state
+// Combinators
+let andThen: (t<'a>, t<'b>) => t<('a, 'b)>   // Sequential
+let \"</>": (t<'a>, t<'b>) => t<('a, 'b)>    // Operator form
+let map: (t<'a>, 'a => 'b) => t<'b>          // Transform
+let oneOf: array<t<'a>> => t<'a>             // Alternatives
 
-=== Middleware
-Middleware is explicit and ordered.
+// Query params
+let query: string => t<option<string>>
+let queryInt: string => t<option<int>>
+let queryRequired: string => t<string>
 
-It can:
-* enrich context
-* enforce invariants
-* reject or transform requests
+// Execute
+let parse: (t<'a>, Url.t) => option<'a>
+----
 
-=== Distributed state (optional)
-`cadre-router` can integrate **CRDT-based shared state** for:
+=== `Navigation`
 
-* multi-node services
-* collaborative or real-time systems
-* eventually consistent coordination
+Browser History API abstraction.
 
-This layer is **optional** and additive.
+[source,rescript]
+----
+let pushUrl: string => unit
+let replaceUrl: string => unit
+let back: unit => unit
+let forward: unit => unit
+let currentUrl: unit => Url.t
+let onUrlChange: (Url.t => unit) => unsubscribe
 
-== Repository layout
+// Type-safe functor
+module Make: (R: { type t; let toString: t => string }) => {
+  let pushRoute: R.t => unit
+  let replaceRoute: R.t => unit
+}
+----
 
-* `src/` — router core, context model, middleware, CRDT modules
-* `examples/` — runnable examples demonstrating intended usage
-* `tests/` — correctness tests
-* `benchmark/` — performance comparisons
-* `docs/` — design notes and explanations
-* `scripts/` — development helpers
+=== `Link` (React, optional)
 
-== Design principles
+Type-safe link component for React applications.
 
-* *Typed by default*: avoid stringly-typed routing
-* *Explicit effects*: no hidden global state
-* *Small core*: advanced features live in add-ons
-* *Deterministic handlers*: easier to reason about and test
-* *Deno/Web API alignment*: no Node assumptions
+[source,rescript]
+----
+// Generic href-based link
+<CadreRouter.Link href="/profile">"Profile"</CadreRouter.Link>
 
-== When to use this
+// Type-safe route-based link (via functor)
+module MyLink = CadreRouter.Link.Make({
+  type t = Route.t
+  let toString = Route.toString
+})
 
-Use `cadre-router` when:
+<MyLink route={Route.Profile}>"Profile"</MyLink>
+----
 
-* You are building a service, API, or edge application
-* Routing complexity matters
-* You want compile-time guarantees
-* You expect to add coordination or shared state later
+== Typed ID Pattern
 
-Do not use it when:
+For type-safe route parameters, define ID modules:
 
-* You are building a low-level library
-* You only need a trivial HTTP handler
-* You want maximal JS ecosystem compatibility
+[source,rescript]
+----
+module JourneyId = {
+  type t = JourneyId(string)
 
-== Relationship to other projects
+  let fromString = str =>
+    if Js.String2.length(str) > 0 { Some(JourneyId(str)) }
+    else { None }
 
-`cadre-router` is **infrastructure around applications**.
+  let toString = (JourneyId(str)) => str
 
-It pairs well with:
-* domain-specific runtimes
-* policy engines
-* WebAssembly execution services
-* distributed registries
+  // Parser for cadre-router
+  let parser = CadreRouter.Parser.custom(fromString)
+}
 
-It does not replace them.
+// Usage in route parser:
+s("journey")->andThen(JourneyId.parser)->map(((_, id)) => Journey(id))
+----
 
-== License
+Invalid IDs are rejected during URL parsing, not later in the app.
 
-See `LICENSE.txt`.
+== Nested Routes
 
-== Technology boundaries
+[source,rescript]
+----
+type journeySubRoute = JourneyMap | JourneyLog | JourneySettings
 
-This project intentionally uses:
+type route = Journey(JourneyId.t, journeySubRoute)
+
+let subParser = Parser.oneOf([
+  Parser.s("map")->Parser.map(_ => JourneyMap),
+  Parser.s("log")->Parser.map(_ => JourneyLog),
+  Parser.s("settings")->Parser.map(_ => JourneySettings),
+  Parser.top->Parser.map(_ => JourneyMap),  // default
+])
+
+// /journey/:id/map, /journey/:id/log, etc.
+let parser =
+  Parser.s("journey")
+  ->Parser.andThen(JourneyId.parser)
+  ->Parser.andThen(subParser)
+  ->Parser.map((((_, id), sub)) => Journey(id, sub))
+----
+
+== Query Parameters
+
+[source,rescript]
+----
+type route = Search({ query: string, page: option<int> })
+
+let parser =
+  Parser.s("search")
+  ->Parser.andThen(Parser.queryRequired("q"))
+  ->Parser.andThen(Parser.queryInt("page"))
+  ->Parser.map((((_, q), page)) => Search({ query: q, page }))
+
+// Parses: /search?q=hello&page=2
+----
+
+== Framework Integration
+
+=== rescript-tea
+
+For full rescript-tea integration with `Tea.Cmd.t`, `Tea.Sub.t`, and TEA-native links, see the companion project **cadre-tea-router**.
+
+Design specification: `docs/TEA_INTEGRATION_HANDOVER.adoc`
+
+=== React
+
+Use the `Link` module directly:
+
+[source,rescript]
+----
+module RouteLink = CadreRouter.Link.Make({
+  type t = Route.t
+  let toString = Route.toString
+})
+
+@react.component
+let make = () => {
+  <nav>
+    <RouteLink route={Route.Home}>"Home"</RouteLink>
+    <RouteLink route={Route.Profile}>"Profile"</RouteLink>
+  </nav>
+}
+----
+
+=== Vanilla
+
+Use `Navigation` directly:
+
+[source,rescript]
+----
+module Nav = CadreRouter.Navigation.Make({
+  type t = Route.t
+  let toString = Route.toString
+})
+
+// Navigate
+Nav.pushRoute(Route.Profile)
+
+// Listen for changes
+let unsubscribe = CadreRouter.Navigation.onUrlChange(url => {
+  let route = url->CadreRouter.Parser.parse(Route.parser, _)
+  // Update your app state
+})
+----
+
+== Repository Layout
+
+* `src/client/` — Client-side routing modules (Url, Parser, Navigation, Link)
+* `src/` — Server-side routing (future)
+* `examples/` — Usage examples
+* `docs/` — Design documents and specifications
+
+== Design Principles
+
+* **Typed by default** — Routes are variants, not strings
+* **Bidirectional** — Parse and serialize with the same type
+* **Explicit** — No hidden global state or magic
+* **Composable** — Small combinators, not monolithic config
+* **Framework-agnostic** — Core works anywhere, integrations are separate
+
+== Technology Boundaries
+
+This project uses:
 
 * ReScript (source of truth)
 * JavaScript (compiled output)
 * Web APIs / Deno runtime
 
-It explicitly does *not* depend on:
+It does *not* depend on:
+
 * Node.js
 * TypeScript
-* JVM / .NET
-* SQL or relational databases
+* npm (use Deno imports)
+
+== License
+
+See `LICENSE.txt`.
 
 == Contributing
 
-Contributions are welcome, especially:
+Contributions welcome:
 
-* example improvements
-* API surface tightening
-* documentation clarifications
-* benchmark extensions
+* Bug fixes and improvements
+* Additional parser combinators
+* Documentation improvements
+* Framework integration examples
 
 AsciiDoc is preferred for documentation.
