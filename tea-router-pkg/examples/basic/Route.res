@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Route.res — Example route definitions for TEA app
+// Route.res - Example route definitions for TEA app
 
 // Typed ID for journeys
 module JourneyId = {

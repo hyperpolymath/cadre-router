@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// HashNavigation.resi — Hash-based routing for static hosting
+// HashNavigation.resi - Hash-based routing for static hosting
 //
 // Use this module when deploying to static hosts (GitHub Pages, S3, etc.)
 // where you cannot configure server-side routing.

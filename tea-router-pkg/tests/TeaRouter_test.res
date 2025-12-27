@@ -1,28 +1,28 @@
 // SPDX-License-Identifier: Apache-2.0
-// TeaRouter_test.res — Tests for TEA router integration
+// TeaRouter_test.res - Tests for TEA router integration
 
 // Test harness
 let assertEq = (name: string, actual: 'a, expected: 'a): unit => {
   if actual == expected {
-    Js.Console.log(`✓ ${name}`)
+    Js.Console.log(`[PASS] ${name}`)
   } else {
-    Js.Console.error(`✗ ${name}`)
-    Js.Console.error(`  Expected: ${Js.Json.stringifyAny(expected)->Option.getOr("?")}`)
-    Js.Console.error(`  Actual:   ${Js.Json.stringifyAny(actual)->Option.getOr("?")}`)
+    Js.Console.error(`[FAIL] ${name}`)
+    Js.Console.error(`  Expected: ${Js.Json.stringifyAny(expected)->Belt.Option.getWithDefault("?")}`)
+    Js.Console.error(`  Actual:   ${Js.Json.stringifyAny(actual)->Belt.Option.getWithDefault("?")}`)
   }
 }
 
 let assertSome = (name: string, actual: option<'a>): unit => {
   switch actual {
-  | Some(_) => Js.Console.log(`✓ ${name}`)
-  | None => Js.Console.error(`✗ ${name} - expected Some, got None`)
+  | Some(_) => Js.Console.log(`[PASS] ${name}`)
+  | None => Js.Console.error(`[FAIL] ${name} - expected Some, got None`)
   }
 }
 
 let assertNone = (name: string, actual: option<'a>): unit => {
   switch actual {
-  | None => Js.Console.log(`✓ ${name}`)
-  | Some(_) => Js.Console.error(`✗ ${name} - expected None, got Some`)
+  | None => Js.Console.log(`[PASS] ${name}`)
+  | Some(_) => Js.Console.error(`[FAIL] ${name} - expected None, got Some`)
   }
 }
 
@@ -87,7 +87,7 @@ let testTypes = () => {
   let _: CadreRouter.Url.t => option<route> = Router.parseUrl
   let _: unit => option<route> = Router.currentRoute
 
-  Js.Console.log("✓ Router module types compile correctly")
+  Js.Console.log("[PASS] Router module types compile correctly")
 }
 
 // ============================================================
@@ -144,9 +144,9 @@ let testRoundtrip = () => {
       let name = `roundtrip: ${url}`
 
       switch parsed {
-      | Some(r) if r == route => Js.Console.log(`✓ ${name}`)
-      | Some(_) => Js.Console.error(`✗ ${name} - parsed to different route`)
-      | None => Js.Console.error(`✗ ${name} - failed to parse`)
+      | Some(r) if r == route => Js.Console.log(`[PASS] ${name}`)
+      | Some(_) => Js.Console.error(`[FAIL] ${name} - parsed to different route`)
+      | None => Js.Console.error(`[FAIL] ${name} - failed to parse`)
       }
     }
   })
@@ -163,18 +163,18 @@ let testMessageConstruction = () => {
   let msg3 = UrlNotFound(CadreRouter.Url.fromString("/unknown"))
 
   switch msg1 {
-  | RouteChanged(Home) => Js.Console.log("✓ RouteChanged(Home) message")
-  | _ => Js.Console.error("✗ RouteChanged(Home) message")
+  | RouteChanged(Home) => Js.Console.log("[PASS] RouteChanged(Home) message")
+  | _ => Js.Console.error("[FAIL] RouteChanged(Home) message")
   }
 
   switch msg2 {
-  | RouteChanged(Profile) => Js.Console.log("✓ RouteChanged(Profile) message")
-  | _ => Js.Console.error("✗ RouteChanged(Profile) message")
+  | RouteChanged(Profile) => Js.Console.log("[PASS] RouteChanged(Profile) message")
+  | _ => Js.Console.error("[FAIL] RouteChanged(Profile) message")
   }
 
   switch msg3 {
-  | UrlNotFound(_) => Js.Console.log("✓ UrlNotFound message")
-  | _ => Js.Console.error("✗ UrlNotFound message")
+  | UrlNotFound(_) => Js.Console.log("[PASS] UrlNotFound message")
+  | _ => Js.Console.error("[FAIL] UrlNotFound message")
   }
 }
 
@@ -203,7 +203,7 @@ let testHashRouterTypes = () => {
   let _: CadreRouter.Url.t => option<route> = HashRouter.parseUrl
   let _: unit => option<route> = HashRouter.currentRoute
 
-  Js.Console.log("✓ HashRouter module types compile correctly")
+  Js.Console.log("[PASS] HashRouter module types compile correctly")
 }
 
 // ============================================================

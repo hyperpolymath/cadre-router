@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Parser.res — Elm-style URL parser combinators
+// Parser.res - Elm-style URL parser combinators
 
 type state = {
   remaining: list<string>,
@@ -152,7 +152,7 @@ let queryRequired = (key: string): t<string> => {
 // === Advanced Segment Matchers ===
 
 // UUID regex: 8-4-4-4-12 hex chars
-let uuidRegex = %re"/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/"
+let uuidRegex = %re("/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/")
 
 let uuid: t<string> = state => {
   switch state.remaining {
@@ -167,7 +167,7 @@ let uuid: t<string> = state => {
 }
 
 // Slug: lowercase alphanumeric + hyphens, no leading/trailing hyphens
-let slugRegex = %re"/^[a-z0-9]+(?:-[a-z0-9]+)*$/"
+let slugRegex = %re("/^[a-z0-9]+(?:-[a-z0-9]+)*$/")
 
 let slug: t<string> = state => {
   switch state.remaining {
@@ -293,9 +293,9 @@ let debug = (label: string, parser: t<'a>): t<'a> => {
     switch result {
     | Some((_, newState)) =>
       Js.Console.log(`  Result: Success`)
-      Js.Console.log(`  Consumed: ${
+      Js.Console.log(`  Consumed: ${Belt.Int.toString(
         Belt.List.length(state.remaining) - Belt.List.length(newState.remaining)
-      } segments`)
+      )} segments`)
     | None =>
       Js.Console.log(`  Result: Failed`)
     }
@@ -353,7 +353,7 @@ let parseWithError = (parser: t<'a>, url: Url.t): result<'a, parseError> => {
     | list{} => Ok(result)
     | remaining =>
       let consumedCount = Belt.List.length(url.path) - Belt.List.length(remaining)
-      let consumed = url.path->Belt.List.take(consumedCount)->Belt.Option.getOr(list{})
+      let consumed = url.path->Belt.List.take(consumedCount)->Belt.Option.getWithDefault(list{})
       Error({
         remainingPath: remaining,
         consumedPath: consumed,

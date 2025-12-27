@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// RouteBuilder.res — Bidirectional route definitions
+// RouteBuilder.res - Bidirectional route definitions
 
 type t<'route> = {
   parse: Url.t => option<'route>,
@@ -43,7 +43,7 @@ let custom = (
   }
 }
 
-let \"/>" = (segA: segment<'a>, segB: segment<'b>): segment<('a, 'b)> => {
+let andThen = (segA: segment<'a>, segB: segment<'b>): segment<('a, 'b)> => {
   {
     parser: Parser.andThen(segA.parser, segB.parser),
     serializer: ((a, b)) => {
@@ -51,6 +51,8 @@ let \"/>" = (segA: segment<'a>, segB: segment<'b>): segment<('a, 'b)> => {
     },
   }
 }
+
+let \"/>" = andThen
 
 let end_: segment<unit> = {
   parser: Parser.top,

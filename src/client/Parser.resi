@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Parser.resi — Elm-style URL parser combinators
+// Parser.resi - Elm-style URL parser combinators
 
 /**
  * Parser state: remaining path segments and the URL for query access

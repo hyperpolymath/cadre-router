@@ -1,28 +1,28 @@
 // SPDX-License-Identifier: Apache-2.0
-// Parser_test.res — Tests for URL parser combinators
+// Parser_test.res - Tests for URL parser combinators
 
 // Test harness
 let assertEq = (name: string, actual: 'a, expected: 'a): unit => {
   if actual == expected {
-    Js.Console.log(`✓ ${name}`)
+    Js.Console.log(`[PASS] ${name}`)
   } else {
-    Js.Console.error(`✗ ${name}`)
-    Js.Console.error(`  Expected: ${Js.Json.stringifyAny(expected)->Option.getOr("?")}`)
-    Js.Console.error(`  Actual:   ${Js.Json.stringifyAny(actual)->Option.getOr("?")}`)
+    Js.Console.error(`[FAIL] ${name}`)
+    Js.Console.error(`  Expected: ${Js.Json.stringifyAny(expected)->Belt.Option.getWithDefault("?")}`)
+    Js.Console.error(`  Actual:   ${Js.Json.stringifyAny(actual)->Belt.Option.getWithDefault("?")}`)
   }
 }
 
 let assertSome = (name: string, actual: option<'a>): unit => {
   switch actual {
-  | Some(_) => Js.Console.log(`✓ ${name}`)
-  | None => Js.Console.error(`✗ ${name} - expected Some, got None`)
+  | Some(_) => Js.Console.log(`[PASS] ${name}`)
+  | None => Js.Console.error(`[FAIL] ${name} - expected Some, got None`)
   }
 }
 
 let assertNone = (name: string, actual: option<'a>): unit => {
   switch actual {
-  | None => Js.Console.log(`✓ ${name}`)
-  | Some(_) => Js.Console.error(`✗ ${name} - expected None, got Some`)
+  | None => Js.Console.log(`[PASS] ${name}`)
+  | Some(_) => Js.Console.error(`[FAIL] ${name} - expected None, got Some`)
   }
 }
 
@@ -111,7 +111,7 @@ let testCustom = () => {
   let result = Parser.parse(TestId.parser, urlValid)
   switch result {
   | Some(TestId.TestId(s)) => assertEq("custom: parses valid ID", s, "abc123")
-  | None => Js.Console.error("✗ custom: expected valid parse")
+  | None => Js.Console.error("[FAIL] custom: expected valid parse")
   }
 
   assertNone("custom: rejects invalid", Parser.parse(TestId.parser, urlTooLong))
@@ -129,8 +129,9 @@ let testAndThen = () => {
 }
 
 let testAndThenOperator = () => {
-  open Parser
-  let parser = s("user") </> int
+  // Note: The </> operator is an alias for andThen
+  // Testing via explicit andThen call since operator syntax conflicts with ReScript 12
+  let parser = Parser.s("user")->Parser.andThen(Parser.int)
   let url = Url.fromString("/user/42")
   let result = Parser.parse(parser, url)
   assertEq("</>: operator form works", result, Some(((), 42)))
@@ -229,12 +230,12 @@ let testNestedRoutes = () => {
 
   switch Parser.parse(parser, urlA) {
   | Some(Nested(TestId.TestId(id), SubA)) => assertEq("nested: /item/xyz/a", id, "xyz")
-  | _ => Js.Console.error("✗ nested: /item/xyz/a failed")
+  | _ => Js.Console.error("[FAIL] nested: /item/xyz/a failed")
   }
 
   switch Parser.parse(parser, urlB) {
-  | Some(Nested(_, SubB)) => Js.Console.log("✓ nested: /item/xyz/b")
-  | _ => Js.Console.error("✗ nested: /item/xyz/b failed")
+  | Some(Nested(_, SubB)) => Js.Console.log("[PASS] nested: /item/xyz/b")
+  | _ => Js.Console.error("[FAIL] nested: /item/xyz/b failed")
   }
 
   assertNone("nested: no sub-route", Parser.parse(parser, urlNoSub))
@@ -275,12 +276,12 @@ let testFullRouter = () => {
 
   switch Parser.parse(router, Url.fromString("/item/abc")) {
   | Some(Item(TestId.TestId(id))) => assertEq("router: /item/abc", id, "abc")
-  | _ => Js.Console.error("✗ router: /item/abc failed")
+  | _ => Js.Console.error("[FAIL] router: /item/abc failed")
   }
 
   switch Parser.parse(router, Url.fromString("/nested/xyz/b")) {
   | Some(Nested(TestId.TestId(id), SubB)) => assertEq("router: /nested/xyz/b", id, "xyz")
-  | _ => Js.Console.error("✗ router: /nested/xyz/b failed")
+  | _ => Js.Console.error("[FAIL] router: /nested/xyz/b failed")
   }
 
   switch Parser.parse(router, Url.fromString("/search?q=hello&page=2")) {
@@ -288,7 +289,7 @@ let testFullRouter = () => {
       assertEq("router: search query", query, "hello")
       assertEq("router: search page", page, Some(2))
     }
-  | _ => Js.Console.error("✗ router: /search failed")
+  | _ => Js.Console.error("[FAIL] router: /search failed")
   }
 
   assertNone("router: unknown path", Parser.parse(router, Url.fromString("/unknown")))
@@ -317,10 +318,13 @@ let testEmptyOneOf = () => {
 }
 
 let testChainedAndThen = () => {
-  open Parser
+  // Using explicit andThen calls since operator syntax conflicts with ReScript 12
   let parser =
-    s("a") </> s("b") </> s("c") </> str
-    ->map(((((_, _), _), captured)) => captured)
+    Parser.s("a")
+    ->Parser.andThen(Parser.s("b"))
+    ->Parser.andThen(Parser.s("c"))
+    ->Parser.andThen(Parser.str)
+    ->Parser.map(((((_, _), _), captured)) => captured)
 
   let url = Url.fromString("/a/b/c/value")
   assertEq("chained andThen: deep nesting", Parser.parse(parser, url), Some("value"))

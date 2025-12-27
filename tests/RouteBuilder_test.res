@@ -1,28 +1,28 @@
 // SPDX-License-Identifier: Apache-2.0
-// RouteBuilder_test.res — Tests for bidirectional route builder
+// RouteBuilder_test.res - Tests for bidirectional route builder
 
 // Test harness
 let assertEq = (name: string, actual: 'a, expected: 'a): unit => {
   if actual == expected {
-    Js.Console.log(`✓ ${name}`)
+    Js.Console.log(`[PASS] ${name}`)
   } else {
-    Js.Console.error(`✗ ${name}`)
-    Js.Console.error(`  Expected: ${Js.Json.stringifyAny(expected)->Option.getOr("?")}`)
-    Js.Console.error(`  Actual:   ${Js.Json.stringifyAny(actual)->Option.getOr("?")}`)
+    Js.Console.error(`[FAIL] ${name}`)
+    Js.Console.error(`  Expected: ${Js.Json.stringifyAny(expected)->Belt.Option.getWithDefault("?")}`)
+    Js.Console.error(`  Actual:   ${Js.Json.stringifyAny(actual)->Belt.Option.getWithDefault("?")}`)
   }
 }
 
 let assertSome = (name: string, actual: option<'a>): unit => {
   switch actual {
-  | Some(_) => Js.Console.log(`✓ ${name}`)
-  | None => Js.Console.error(`✗ ${name} - expected Some, got None`)
+  | Some(_) => Js.Console.log(`[PASS] ${name}`)
+  | None => Js.Console.error(`[FAIL] ${name} - expected Some, got None`)
   }
 }
 
 let assertNone = (name: string, actual: option<'a>): unit => {
   switch actual {
-  | None => Js.Console.log(`✓ ${name}`)
-  | Some(_) => Js.Console.error(`✗ ${name} - expected None, got Some`)
+  | None => Js.Console.log(`[PASS] ${name}`)
+  | Some(_) => Js.Console.error(`[FAIL] ${name} - expected None, got Some`)
   }
 }
 
@@ -58,20 +58,32 @@ let homeRoute = RouteBuilder.build(
 )
 
 let profileRoute = RouteBuilder.build(
-  RouteBuilder.(lit("profile") /> end_),
+  RouteBuilder.andThen(RouteBuilder.lit("profile"), RouteBuilder.end_),
   ~toRoute=_ => Profile,
   ~fromRoute=route => switch route { | Profile => Some(((), ())) | _ => None }
 )
 
 let userRoute = RouteBuilder.build(
-  RouteBuilder.(lit("user") /> int() /> end_),
+  RouteBuilder.andThen(RouteBuilder.andThen(RouteBuilder.lit("user"), RouteBuilder.int()), RouteBuilder.end_),
   ~toRoute=(((_, id), _)) => User(id),
   ~fromRoute=route => switch route { | User(id) => Some((((), id), ())) | _ => None }
 )
 
 let userProfileRoute = RouteBuilder.build(
-  RouteBuilder.(lit("user") /> int() /> lit("profile") /> str() /> end_),
-  ~toRoute=((((_, id), _), section), _) => UserProfile(id, section),
+  RouteBuilder.andThen(
+    RouteBuilder.andThen(
+      RouteBuilder.andThen(
+        RouteBuilder.andThen(RouteBuilder.lit("user"), RouteBuilder.int()),
+        RouteBuilder.lit("profile")
+      ),
+      RouteBuilder.str()
+    ),
+    RouteBuilder.end_
+  ),
+  ~toRoute=arg => {
+    let ((((_, id), _), section), _) = arg
+    UserProfile(id, section)
+  },
   ~fromRoute=route => switch route {
     | UserProfile(id, section) => Some((((((), id), ()), section), ()))
     | _ => None
@@ -79,8 +91,17 @@ let userProfileRoute = RouteBuilder.build(
 )
 
 let itemRoute = RouteBuilder.build(
-  RouteBuilder.(lit("item") /> custom(~parse=UserId.fromString, ~serialize=UserId.toString) /> end_),
-  ~toRoute=((_, id), _) => Item(id),
+  RouteBuilder.andThen(
+    RouteBuilder.andThen(
+      RouteBuilder.lit("item"),
+      RouteBuilder.custom(~parse=UserId.fromString, ~serialize=UserId.toString)
+    ),
+    RouteBuilder.end_
+  ),
+  ~toRoute=arg => {
+    let ((_, id), _) = arg
+    Item(id)
+  },
   ~fromRoute=route => switch route {
     | Item(id) => Some((((), id), ()))
     | _ => None
@@ -101,7 +122,7 @@ let router = RouteBuilder.oneOf([
 
 let testLiteralSegment = () => {
   let route = RouteBuilder.build(
-    RouteBuilder.(lit("test") /> end_),
+    RouteBuilder.andThen(RouteBuilder.lit("test"), RouteBuilder.end_),
     ~toRoute=_ => Profile,
     ~fromRoute=route => switch route { | Profile => Some(((), ())) | _ => None }
   )
@@ -113,14 +134,14 @@ let testLiteralSegment = () => {
 
 let testIntSegment = () => {
   let route = RouteBuilder.build(
-    RouteBuilder.(lit("num") /> int() /> end_),
-    ~toRoute=((_, n), _) => User(n),
+    RouteBuilder.andThen(RouteBuilder.andThen(RouteBuilder.lit("num"), RouteBuilder.int()), RouteBuilder.end_),
+    ~toRoute=arg => { let ((_, n), _) = arg; User(n) },
     ~fromRoute=route => switch route { | User(n) => Some((((), n), ())) | _ => None }
   )
 
   switch route.parse(Url.fromString("/num/42")) {
   | Some(User(n)) => assertEq("int: parses /num/42", n, 42)
-  | _ => Js.Console.error("✗ int: failed to parse /num/42")
+  | _ => Js.Console.error("[FAIL] int: failed to parse /num/42")
   }
 
   assertNone("int: rejects /num/abc", route.parse(Url.fromString("/num/abc")))
@@ -129,14 +150,14 @@ let testIntSegment = () => {
 
 let testStrSegment = () => {
   let route = RouteBuilder.build(
-    RouteBuilder.(lit("name") /> str() /> end_),
-    ~toRoute=((_, s), _) => UserProfile(0, s),
+    RouteBuilder.andThen(RouteBuilder.andThen(RouteBuilder.lit("name"), RouteBuilder.str()), RouteBuilder.end_),
+    ~toRoute=arg => { let ((_, s), _) = arg; UserProfile(0, s) },
     ~fromRoute=route => switch route { | UserProfile(_, s) => Some((((), s), ())) | _ => None }
   )
 
   switch route.parse(Url.fromString("/name/alice")) {
   | Some(UserProfile(_, s)) => assertEq("str: parses /name/alice", s, "alice")
-  | _ => Js.Console.error("✗ str: failed to parse /name/alice")
+  | _ => Js.Console.error("[FAIL] str: failed to parse /name/alice")
   }
 
   assertEq("str: serializes", route.toString(UserProfile(0, "bob")), Some("/name/bob"))
@@ -148,7 +169,7 @@ let testCustomSegment = () => {
 
   switch itemRoute.toString(Item(UserId.UserId("abc"))) {
   | Some(s) => assertEq("custom: serializes", s, "/item/abc")
-  | None => Js.Console.error("✗ custom: failed to serialize")
+  | None => Js.Console.error("[FAIL] custom: failed to serialize")
   }
 }
 
@@ -166,7 +187,7 @@ let testRouterParsing = () => {
       assertEq("router: user id", id, 5)
       assertEq("router: section", section, "settings")
     }
-  | _ => Js.Console.error("✗ router: failed to parse /user/5/profile/settings")
+  | _ => Js.Console.error("[FAIL] router: failed to parse /user/5/profile/settings")
   }
 
   assertNone("router: rejects unknown", router.parse(Url.fromString("/unknown")))
@@ -203,14 +224,14 @@ let testRoundtrip = () => {
     | Some(url) => {
         switch router.parse(Url.fromString(url)) {
         | Some(parsed) if parsed == route =>
-          Js.Console.log(`✓ roundtrip: ${url}`)
+          Js.Console.log(`[PASS] roundtrip: ${url}`)
         | Some(_) =>
-          Js.Console.error(`✗ roundtrip: ${url} - parsed to different route`)
+          Js.Console.error(`[FAIL] roundtrip: ${url} - parsed to different route`)
         | None =>
-          Js.Console.error(`✗ roundtrip: ${url} - failed to parse`)
+          Js.Console.error(`[FAIL] roundtrip: ${url} - failed to parse`)
         }
       }
-    | None => Js.Console.error(`✗ roundtrip: failed to serialize route`)
+    | None => Js.Console.error(`[FAIL] roundtrip: failed to serialize route`)
     }
   })
 }

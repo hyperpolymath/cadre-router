@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Route.res — Example route definition for a typical SPA
+// Route.res - Example route definition for a typical SPA
 //
 // This example demonstrates patterns for nafa-app-ambient style routing:
 // - Typed ID parameters (JourneyId.t)

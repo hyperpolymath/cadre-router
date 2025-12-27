@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Link.res — Type-safe link component (React-based, optional)
+// Link.res - Type-safe link component (React-based, optional)
 
 @react.component
 let make = (

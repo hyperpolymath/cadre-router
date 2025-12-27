@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Navigation.resi — Browser History API abstraction
+// Navigation.resi - Browser History API abstraction
 
 /**
  * Navigate to URL, adding entry to browser history (pushState)
