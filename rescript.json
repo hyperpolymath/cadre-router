@@ -2,7 +2,8 @@
   "name": "cadre-router",
   "sources": [
     { "dir": "src", "subdirs": true },
-    { "dir": "demo", "subdirs": true }
+    { "dir": "demo", "subdirs": true },
+    { "dir": "tests", "subdirs": true }
   ],
   "package-specs": [
     {
