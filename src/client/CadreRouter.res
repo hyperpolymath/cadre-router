@@ -8,5 +8,10 @@ module Navigation = Navigation
 module HashNavigation = HashNavigation
 module RouteBuilder = RouteBuilder
 
+// Enhanced features
+module RouteMeta = RouteMeta
+module NestedRoute = NestedRoute
+module Transition = Transition
+
 // Optional React integration
 module Link = Link
