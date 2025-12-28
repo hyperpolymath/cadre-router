@@ -11,6 +11,12 @@ let HashNavigation;
 
 let RouteBuilder;
 
+let RouteMeta;
+
+let NestedRoute;
+
+let Transition;
+
 let Link;
 
 export {
@@ -19,6 +25,9 @@ export {
   Navigation,
   HashNavigation,
   RouteBuilder,
+  RouteMeta,
+  NestedRoute,
+  Transition,
   Link,
 }
 /* No side effect */
