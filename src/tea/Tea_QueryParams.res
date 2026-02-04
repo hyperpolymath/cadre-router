@@ -69,11 +69,11 @@ let parseMulti = (queryString: string): multi => {
       | [key, value] =>
         let decodedKey = decodeURIComponent(key)
         let decodedValue = decodeURIComponent(value)
-        let existing = Js.Dict.get(dict, decodedKey)->Option.getOr([])
+        let existing = Js.Dict.get(dict, decodedKey)->Option.getWithDefault([])
         Js.Dict.set(dict, decodedKey, Array.concat(existing, [decodedValue]))
       | [key] =>
         let decodedKey = decodeURIComponent(key)
-        let existing = Js.Dict.get(dict, decodedKey)->Option.getOr([])
+        let existing = Js.Dict.get(dict, decodedKey)->Option.getWithDefault([])
         Js.Dict.set(dict, decodedKey, Array.concat(existing, [""]))
       | _ => ()
       }
@@ -92,11 +92,10 @@ let build = (params: t): string => {
   if Array.length(pairs) == 0 {
     ""
   } else {
-    "?" ++ pairs
-      ->Array.map(((key, value)) => {
-        encodeURIComponent(key) ++ "=" ++ encodeURIComponent(value)
-      })
-      ->Array.join("&")
+    let encoded = pairs->Array.map(((key, value)) => {
+      encodeURIComponent(key) ++ "=" ++ encodeURIComponent(value)
+    })
+    "?" ++ Belt.Array.joinWith(encoded, "&", v => v)
   }
 }
 
@@ -111,7 +110,7 @@ let buildMulti = (params: multi): string => {
         encodeURIComponent(key) ++ "=" ++ encodeURIComponent(value)
       })
     })
-    "?" ++ allPairs->Array.join("&")
+    "?" ++ Belt.Array.joinWith(allPairs, "&", v => v)
   }
 }
 
@@ -126,7 +125,7 @@ let get = (params: t, key: string): option<string> => {
 
 @ocaml.doc("Get a query parameter with default")
 let getOr = (params: t, key: string, default: string): string => {
-  Js.Dict.get(params, key)->Option.getOr(default)
+  Js.Dict.get(params, key)->Option.getWithDefault(default)
 }
 
 @ocaml.doc("Get a query parameter as int")

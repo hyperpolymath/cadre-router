@@ -25,7 +25,7 @@ let parse: string => t = url => {
   // Normalize path - ensure leading slash, remove trailing slash
   let normalizedPath = switch path {
   | "" => "/"
-  | p if !p->String.startsWith("/") => "/" ++ p
+  | p if !(p->String.startsWith("/")) => "/" ++ p
   | p if p->String.length > 1 && p->String.endsWith("/") =>
     p->String.slice(~start=0, ~end=p->String.length - 1)
   | p => p
@@ -40,8 +40,8 @@ let parse: string => t = url => {
 
 @ocaml.doc("Convert URL components back to a string")
 let toString: t => string = ({path, query, fragment}) => {
-  let queryPart = query->Option.mapOr("", q => "?" ++ q)
-  let fragmentPart = fragment->Option.mapOr("", f => "#" ++ f)
+  let queryPart = query->Option.mapWithDefault("", q => "?" ++ q)
+  let fragmentPart = fragment->Option.mapWithDefault("", f => "#" ++ f)
   path ++ queryPart ++ fragmentPart
 }
 
