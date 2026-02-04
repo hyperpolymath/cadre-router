@@ -317,6 +317,10 @@ let unsubscribe = CadreRouter.Navigation.onUrlChange(url => {
 })
 ----
 
+== Documentation
+
+* **link:docs/API_GUIDE.md[Complete API Guide]** — Comprehensive routing documentation covering type-safe routing concepts, parser combinators, navigation system, TEA integration, and complete examples
+
 == Repository Layout
 
 * `src/client/` — Client-side routing modules (Url, Parser, Navigation, Link)
