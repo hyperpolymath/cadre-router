@@ -21,7 +21,21 @@
     (security
       "All commits signed. "
       "Hypatia neurosymbolic scanning enabled. "
-      "OpenSSF Scorecard tracking.")
+      "OpenSSF Scorecard tracking."
+
+      ;; Cryptographic Requirements (for future crypto features if needed)
+      "password-hashing: Argon2id (512 MiB, 8 iter, 4 lanes) - max resistance to GPU/ASIC attacks"
+      "general-hashing: SHAKE3-512 (512-bit output, FIPS 202) - post-quantum for provenance/key derivation"
+      "pq-signatures: Dilithium5-AES hybrid (ML-DSA-87, FIPS 204) with SPHINCS+ backup"
+      "pq-key-exchange: Kyber-1024 + SHAKE256-KDF (ML-KEM-1024, FIPS 203)"
+      "classical-sigs: Ed448 + Dilithium5 hybrid - TERMINATE Ed25519/SHA-1 immediately"
+      "symmetric: XChaCha20-Poly1305 (256-bit key) - larger nonce space for quantum margin"
+      "key-derivation: HKDF-SHAKE512 (FIPS 202) - post-quantum KDF for all secret material"
+      "rng: ChaCha20-DRBG (512-bit seed, SP 800-90Ar1) - CSPRNG for high-entropy needs"
+      "database-hashing: BLAKE3 (512-bit) + SHAKE3-512 - speed + long-term storage"
+      "formal-verification: Idris2 for safety-critical paths - proofs where appropriate"
+      "protocol-stack: QUIC + HTTP/3 + IPv6 ONLY - terminate HTTP/1.1, IPv4, SHA-1"
+      "fallback: SPHINCS+ as conservative PQ backup for all hybrid systems")
     (testing
       "Comprehensive test coverage required. "
       "CI/CD runs on all pushes.")
