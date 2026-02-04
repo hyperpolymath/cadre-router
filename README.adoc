@@ -216,11 +216,65 @@ let parser =
 
 == Framework Integration
 
-=== rescript-tea
+=== rescript-tea (NEW: Integrated!)
 
-For full rescript-tea integration with `Tea.Cmd.t`, `Tea.Sub.t`, and TEA-native links, see the companion project **cadre-tea-router**.
+**TEA integration is now built-in!** (Merged from cadre-tea-router v0.2.0)
 
-Design specification: `docs/TEA_INTEGRATION_HANDOVER.adoc`
+The `src/tea/` modules provide complete TEA/Elm Architecture integration:
+
+[source,rescript]
+----
+// Import TEA routing modules
+open CadreRouter.Tea
+
+// Define routes
+type route = Home | Profile | Journey(JourneyId.t) | NotFound
+
+// TEA-specific routing
+let init = () => {
+  // Initialize from current URL
+  let route = Tea_Router.fromUrl(Url.fromLocation())
+  ({route}, Cmd.none)
+}
+
+let update = (msg, model) => {
+  switch msg {
+  | UrlChanged(route) => ({...model, route}, Cmd.none)
+  | Navigate(newRoute) =>
+      (model, Tea_Navigation.push(routeToUrl(newRoute)))
+  }
+}
+
+let subscriptions = _ => {
+  // Subscribe to URL changes
+  Tea_Router.urlChanges(url => UrlChanged(parseRoute(url)))
+}
+----
+
+**TEA Modules:**
+
+* `Tea_Router` — URL → Msg patterns, route parsing
+* `Tea_Navigation` — `Tea.Cmd.t` wrappers for push/replace/back/forward
+* `Tea_Url` — URL parsing utilities
+* `Tea_QueryParams` — Query parameter helpers
+* `Tea_Guards` — Route guards (block navigation during sync)
+
+**Installation for TEA apps:**
+
+[source,bash]
+----
+npm install cadre-router rescript-tea
+----
+
+Add to `rescript.json`:
+[source,json]
+----
+{
+  "bs-dependencies": ["cadre-router"]
+}
+----
+
+**Note:** `rescript-tea` is a peer dependency. If you're only using the framework-agnostic core (React/vanilla), you don't need it.
 
 === React
 
